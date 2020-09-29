@@ -10,6 +10,7 @@ local lain  = require("lain")
 local awful = require("awful")
 local wibox = require("wibox")
 local dpi   = require("beautiful.xresources").apply_dpi
+local audio_bar = require("awesome-wm-widgets.volumebar-widget.volumebar")
 
 local math, string, os = math, string, os
 local my_table = awful.util.table or gears.table -- 4.{0,1} compatibility
@@ -68,7 +69,7 @@ theme.widget_music                              = theme.dir .. "/icons/note.png"
 theme.widget_music_on                           = theme.dir .. "/icons/note_on.png"
 theme.widget_music_pause                        = theme.dir .. "/icons/pause.png"
 theme.widget_music_stop                         = theme.dir .. "/icons/stop.png"
-theme.widget_vol                                = theme.dir .. "/icons/vol.png"
+theme.widget_vol                                = theme.dir .. "/icons/audio.png"
 theme.widget_vol_low                            = theme.dir .. "/icons/vol_low.png"
 theme.widget_vol_no                             = theme.dir .. "/icons/vol_no.png"
 theme.widget_vol_mute                           = theme.dir .. "/icons/vol_mute.png"
@@ -140,7 +141,7 @@ theme.mail = lain.widget.imap({
 
 -- ALSA volume
 theme.volume = lain.widget.alsabar({
-    --togglechannel = "IEC958,3",
+    togglechannel = "Master,0",
     notification_preset = { font = "Terminus 10", fg = theme.fg_normal },
 })
 
@@ -267,6 +268,8 @@ local brightwidget = awful.widget.watch('light -G', 0.1,
         widget:set_markup(markup.font(theme.font, " " .. brightness_level .. "%"))
 end)
 
+local audioicon = wibox.widget.imagebox(theme.widget_vol)
+
 -- Separators
 local arrow = separators.arrow_left
 
@@ -325,19 +328,19 @@ function theme.at_screen_connect(s)
     s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, awful.util.tasklist_buttons)
 
     -- Create the wibox
-    s.mywibox = awful.wibar({ position = "top", screen = s, height = dpi(25), bg = theme.bg_normal, fg = theme.fg_normal })
+    s.mywibox = awful.wibar({ position = "top", screen = s, height = dpi(30), bg = theme.bg_normal, fg = theme.fg_normal })
 
     -- Add widgets to the wibox
     s.mywibox:setup {
         layout = wibox.layout.align.horizontal,
         { -- Left widgets
             layout = wibox.layout.fixed.horizontal,
-            --spr,
-            s.mytaglist,
+            spr,
+            wibox.container.margin(s.mytaglist, dpi(0), dpi(20)),
             s.mypromptbox,
             spr,
         },
-        s.mytasklist, -- Middle widget
+        wibox.container.margin(s.mytasklist, dpi(20), dpi(50)), -- Middle widget
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
             wibox.widget.systray(),
@@ -361,7 +364,7 @@ function theme.at_screen_connect(s)
             --wibox.container.background(wibox.container.margin(wibox.widget { mpdicon, theme.mpd.widget, layout = wibox.layout.align.horizontal }, dpi(3), dpi(6)), theme.bg_focus),
             --arrow(theme.bg_normal, "#343434"),
             --wibox.container.background(wibox.container.margin(task, dpi(3), dpi(7)), "#343434"),
-            arrow("#343434", "#777E76"),
+            arrow(theme.bg_normal, "#777E76"),
             wibox.container.background(wibox.container.margin(wibox.widget { memicon, mem.widget, layout = wibox.layout.align.horizontal }, dpi(2), dpi(3)), "#777E76"),
             arrow("#777E76", "#4B696D"),
             wibox.container.background(wibox.container.margin(wibox.widget { cpuicon, cpu.widget, layout = wibox.layout.align.horizontal }, dpi(3), dpi(4)), "#4B696D"),
@@ -371,7 +374,9 @@ function theme.at_screen_connect(s)
             --wibox.container.background(wibox.container.margin(wibox.widget { fsicon, theme.fs and theme.fs.widget, layout = wibox.layout.align.horizontal }, dpi(3), dpi(3)), "#CB755B"),
             arrow("#4B3B51", "#8DAA9A"),
             wibox.container.background(wibox.container.margin(wibox.widget { baticon, bat.widget, layout = wibox.layout.align.horizontal }, dpi(3), dpi(3)), "#8DAA9A"),
-            arrow("#8DAA9A", "#C0C0A2"),
+            arrow("#8DAA9A", "#333333"),
+            wibox.container.background(wibox.container.margin(wibox.widget {nil, audioicon, audio_bar({ main_color = '#DDDFFF', get_volume_cmd="amixer sget Master", inc_volume_cmd="amixer sset Master 1%+", dec_volume_cmd="amixer sset Master 1%-"}), layout = wibox.layout.align.horizontal }, dpi(3), dpi(3)), "#333333"),
+            arrow("#333333", "#C0C0A2"),
             wibox.container.background(wibox.container.margin(wibox.widget { nil, neticon, net.widget, layout = wibox.layout.align.horizontal }, dpi(3), dpi(3)), "#C0C0A2"),
             arrow("#C0C0A2", "#777E76"),
             wibox.container.background(wibox.container.margin(binclock, dpi(4), dpi(8)), "#777E76"),

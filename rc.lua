@@ -55,6 +55,8 @@ end
 local function run_once(cmd_arr)
     awful.spawn.with_shell("picom -b")
     awful.spawn.with_shell("source /home/aljaz/.bashrc")
+    awful.spawn.with_shell("xrandr --output HDMI-1 --rotate right")
+    awful.spawn.with_shell("sudo pacman -Syu")
     for _, cmd in ipairs(cmd_arr) do
         awful.spawn.with_shell(string.format("pgrep -u $USER -fx '%s' > /dev/null || (%s)", cmd, cmd))
     end
@@ -89,7 +91,7 @@ local themes = {
     "vertex",          -- 10
 }
 
-local chosen_theme = themes[6]
+local chosen_theme = themes[7]
 local modkey       = "Mod4"
 local altkey       = "Mod1"
 local terminal     = "alacritty"
@@ -98,7 +100,7 @@ local cycle_prev   = true -- cycle trough all previous client or just the first 
 local editor       = "nano"
 local gui_editor   = "code"
 local browser      = os.getenv("BROWSER") or "firefox"
-local scrlocker    = "slock"
+local scrlocker    = "light-locker-command -l"
 
 awful.util.terminal = terminal
 awful.util.tagnames = { "1", "2", "3", "4", "5", "6" }
@@ -457,7 +459,8 @@ globalkeys = my_table.join(
         {description = "volume down", group = "hotkeys"}),
     awful.key({  }, "XF86AudioMute",
         function ()
-            os.execute(string.format("amixer -q set %s toggle", beautiful.volume.togglechannel or beautiful.volume.channel))
+            os.execute(string.format("amixer -q set Headphone toggle"))
+            os.execute("amixer -q set Master toggle")
             beautiful.volume.update()
         end,
         {description = "toggle mute", group = "hotkeys"}),
@@ -548,7 +551,7 @@ globalkeys = my_table.join(
         {description = "show rofi", group = "launcher"}),
     --]]
     -- Prompt
-    awful.key({ modkey }, "r", function () awful.screen.focused().mypromptbox:run() end,
+    awful.key({ modkey }, "r", function () awful.spawn.with_shell("dmenu_run") end,
               {description = "run prompt", group = "launcher"}),
 
     awful.key({ modkey }, "x",
